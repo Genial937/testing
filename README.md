@@ -47,3 +47,7 @@ Tests the software to identify vulnerabilities and ensure it meets security requ
 The main objective of software testing is to design the tests in such a way that it systematically finds different types of errors without taking much time and effort so that less time is required for the development of the software.
 
 ![testing](https://media.geeksforgeeks.org/wp-content/uploads/20200605230034/Untitled226-1.png)
+
+The overall strategy for testing software includes:
+
+- <b>Before testing starts, it’s necessary to identify and specify the requirements of the product in a quantifiable manner.</b> Different characteristics quality of the software is there such as maintainability that means the ability to update and modify, the probability that means to find and estimate any risk, and usability that means how it can easily be used by the customers or end-users. All these characteristic qualities should be specified in a particular order to obtain clear test results without any error.
