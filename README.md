@@ -29,6 +29,7 @@ Tests the functional requirements of the software to ensure they are met.
 ### Regression Testing
 
 Tests the software after changes or modifications have been made to ensure the changes have not introduced new defects.
+![regression](https://pbs.twimg.com/media/DVUoM94VQAAzuws?format=jpg&name=900x900)
 
 ### Performance Testing
 
@@ -95,3 +96,74 @@ The challenge comes in Step 4 — screenshot comparison.
 It’s easy to compare two images pixel by pixel but the trouble is that browsers don’t always render every pixel the same. Minute differences could occur if the page is rendered with different monitors, or different graphics cards, using different browser versions, or a different OS etc. This means that if we perform an exact 1:1 pixel comparison, two screenshots that look identical to humans could fail because they’ve been rendered with completely different pixels. For example:
 
 ![compare](https://miro.medium.com/v2/resize:fit:1294/format:webp/1*FSSY6R17ViANsdcar7pZEA.png)
+![comparison](https://miro.medium.com/v2/resize:fit:1294/format:webp/1*MDWwvGKFeGeb-9gDN-Dq3Q.png)
+
+Source: [](https://applitools.com/blog/visual-regression-testing-developers/)
+
+You can learn more detail about the difficulty of comparing screenshots [here](https://applitools.com/blog/why-screenshot-image-comparison-tools-fail/?utm_term=&utm_source=web-referral&utm_medium=blog&utm_content=&utm_campaign=blog-evergreen-campaign&utm_subgroup=)
+
+Some solutions described below, both Free and Commercial attempt to solve this through a mix of controlling the hardware and software the screenshot are generated with and having some tolerance threshold below which differences are considered acceptable.
+
+#### PlayWright native API
+
+With PlayWright, there’s a page.screenshot() API right out of the box and you could get it up and running by simply doing:
+
+```
+import { test, expect } from '@playwright/test';
+test('example test', async ({ page }) => {
+  await page.goto('https://playwright.dev');
+  expect(await page.screenshot()).toMatchSnapshot('landing.png');
+});
+```
+
+PlayWright uses pixelmatch; a pixel-level image comparison library to compare the screenshots. This library allows the developer to configure a threshold value (ranges from 0 to 1). The smaller the value, the more sensitive the comparison.
+
+For example, when the threshold is set to 0.5 if a baseline has a value of#ffffff, and the new image’s same pixel has a value of #fafafa, the comparison will still pass even if the value is different because the sensitivity is low. But if the threshold was set to 0.01, then the comparison will fail.
+
+The library also tries to handle differences caused by different anti-aliasing.
+
+You can learn more about Playwright’s visual testing solution by checking out [Playwright documentation](https://playwright.dev/docs/test-snapshots)
+
+#### Chromatic
+
+Chromatic is the simplest solution of the four. <b> It is created by the same team behind Storybook and works only with Storybook.</b> You do not need to do anything special other than writing normal Storybook stories. Chromatic will take care of everything.
+
+Famous companies that use Chromatic includes Adobe, Auth0, Seek and more.
+
+##### Test Framework Integration
+
+Storybook
+
+##### Workflow
+
+The way Chromatic works is that every time the code is pushed, the storybook for the project gets published onto Chromatic’s CDN. The publishing can be done manually via CLI as well as automatically through CI/CD integration.
+
+Once the storybook is published, Chromatic can render screenshots for all stories and compare those screenshots to the baseline. A list of changes will be shown and the developer needs to decide to check if the changes are intentional or not. This is known as the UI Test. After the UI Test, the developer can assign these changes to teammates, usually designers and PO for a UI Review.
+
+Chromatic generates screenshots using Chrome, Firefox, and IE11.
+
+##### Diffing engine
+
+Chromatic uses pixel comparison to determine diff. It’s possible and even likely that it uses the same pixelmatch library under the hood as the other free options. Chromatic exposes the diffThreshold parameter for tuning diff engine sensitivity. The diffThreshold is a number between 0 and 1 where 0 is the most accurate and 1 is the least accurate. The default threshold is .063.
+
+##### CI Platforms
+
+Chromatic provides documentation for integration with Github, Gitlab, Bitbucket, Circle CI, Travis, Jenkins, and Azure. It’s possible to configure Chromatic for other providers too but there are no official docs and you’ll need to contact Chromatic for assistance.
+
+##### Source Code Integration
+
+Chromatic works with Github, Bitbucket and GitLab by default. If using another source control service, a custom CI script will be needed to add a check for Chromatic.
+
+Chromatic makes available three PR checks; Storybook Publish, UI Tests, and UI Review. These can be configured to block a PR from merging until the UI changes are tested and reviewed. You do not need to use all of them and can pick and choose the check you want.
+
+Chromatic uses the git branches and git history to decide how to check stories for change for both UI Tests and UI Review. This means that if person A working on branch alpha, publishes the storybook and approve his/her changes, those changes will not reflect for person B working on branch beta unless alpha is merged into the master and B is trying to merge beta into master.
+
+You can get more detail on how Chromatic manages Branches and Baselines [here](https://www.chromatic.com/docs/branching-and-baselines)
+
+Chromatic uses your git history to decide how to check stories for changes for both UI Tests and UI Review. The way it works is intended to get out of your way and do what you expect. However, there can be situations where things get confusing; this document describes in detail the way Chromatic does it.
+
+![alt](https://www.chromatic.com/docs/img/baselines.jpg)
+
+##### Pricing
+
+Chromatic has a free tier that offers 5000 free snapshots per month, and its paid plans start at 149/month for 35,000 snapshots and $0.005 per extra snapshot.
